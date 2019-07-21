@@ -16,23 +16,23 @@
           <div class="card-body table-responsive p-0">
             <table class="table table-hover">
               <thead>
-                <tr>
+                <tr  >
                   <th>ID</th>
                   <th>Name</th>
                   <th>Email</th>
                   <th>Type</th>
+                  <th>Registered At</th>
                   <th>Modify</th>
                 </tr>
               </thead>
               <tbody>
-                
-                <tr>
-                  <td>183</td>
-                  <td>John Doe</td>
-                  <td>11-7-2014</td>
-                  <td>
-                    <span class="tag tag-success">Approved</span>
-                  </td>
+
+                <tr v-for="user in users.data" :key="user.id">
+                  <td>{{ user.id }}</td>
+                  <td>{{ user.name }}</td>
+                  <td> {{ user.email }} </td>
+                  <td>{{ user.type | upText}}</td>
+                  <td>{{ user.created_at | myDate }}</td>
                   <td>
                     <a href="#">
                       <i class="fa fa-edit blue"></i>
@@ -150,6 +150,7 @@
 export default {
   data() {
     return {
+      users:{},
       form: new Form({
         name: "",
         email: "",
@@ -158,16 +159,24 @@ export default {
         bio: "",
         photo: ""
       }),
-      users:{}
     };
   },
 
   methods:{
       loadUsers(){
-          axios.get('api/user').then(({data})=>console.log(data))
+          axios.get('api/user').then(({data})=>this.users = data)
       },
       createUser(){
-          this.form.post('api/user');
+        this.$Progress.start()
+        this.form.post('api/user');
+        this.$Progress.finish()
+        $('#addnewusermodal').modal('hide')
+
+        Toast.fire({
+            type: 'success',
+            title: 'User Created Successfully'
+        })
+
       }
   },
 

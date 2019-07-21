@@ -26,7 +26,10 @@
     },
     "dependencies": {
         "admin-lte": "^3.0.0-beta.1",
+        "moment": "^2.24.0",
+        "sweetalert2": "^8.14.0",
         "vform": "^1.0.1",
+        "vue-progressbar": "^0.7.5",
         "vue-router": "^3.0.7"
     }
 }
