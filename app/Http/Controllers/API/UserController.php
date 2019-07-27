@@ -9,6 +9,11 @@ use App\User;
 
 class UserController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -18,6 +23,28 @@ class UserController extends Controller
     {
         return User::latest()->paginate(10);
     }
+
+
+
+    public function profile(){
+        return auth('api')->user();
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth('api')->user();
+        if($request->photo){
+            $name = time()."." . explode('/',explode(':',substr($request->photo,0,strpos($request->photo,';')))[1])[1];
+            \Image::make($request->photo)->save(public_path('img/profile/').$name);
+        }
+
+        // return ['message'=>"Success"];
+
+    }
+
+
+
+
 
     /**
      * Store a newly created resource in storage.
@@ -63,7 +90,13 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $this->validate($request, [
+            'name'  => 'required|string|max:191',
+        ]);
+
+
+        $user = User::findOrFail($id);
+        $user->update($request->all());
     }
 
     /**

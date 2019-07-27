@@ -66,7 +66,8 @@
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="addnewusermodal">{{editMode ? "Edit User":"Add User"}}</h5>
+            <h5 v-show="!editMode" class="modal-title" id="addnewusermodal">Add User</h5>
+            <h5 v-show="editMode" class="modal-title" id="addnewusermodal">Edit User</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -84,7 +85,7 @@
                 />
                 <has-error :form="form" field="name"></has-error>
               </div>
-              <div class="form-group">
+              <div class="form-group" v-show="editMode">
                 <input
                   v-model="form.email"
                   type="text"
@@ -120,7 +121,7 @@
                 </select>
                 <has-error :form="form" field="type"></has-error>
               </div>
-              <div class="form-group">
+              <div class="form-group" v-show="!editMode">
                 <input
                   v-model="form.password"
                   type="password"
@@ -135,10 +136,17 @@
             <div class="modal-footer">
               <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
               <button
+                v-show="!editMode"
                 :disabled="form.busy"
                 type="submit"
                 class="btn btn-primary"
-              >{{ !editMode ? "Create":"Update" }}</button>
+              >Create</button>
+              <button
+                v-show="editMode"
+                :disabled="form.busy"
+                type="submit"
+                class="btn btn-primary"
+              >Update</button>
             </div>
           </form>
         </div>
@@ -154,9 +162,10 @@ import { setInterval } from "timers";
 export default {
   data() {
     return {
-      editMode: true,
+      editMode: false,
       users: {},
       form: new Form({
+        id: "",
         name: "",
         email: "",
         password: "",
@@ -169,14 +178,30 @@ export default {
 
   methods: {
     updateUser() {
-      console.log("Edit Users");
+      console.log("update form");
+      this.$Progress.start();
+      this.form
+        .put(`api/user/` + this.form.id)
+        .then(data => {
+          //Success
+          Fire.$emit("AfterCreated");
+          this.$Progress.finish();
+          $("#addnewusermodal").modal("hide");
+          Toast.fire({
+            type: "success",
+            title: "User Updated"
+          });
+          this.$Progress.finish();
+        })
+        .catch(err => {
+          //Error
+          this.$Progress.fail();
+        });
     },
 
     editModal(user) {
-      this.form.reset();
-      this.form.clear();
-
       this.editMode = true;
+      this.form.reset();
       $("#addnewusermodal").modal("show");
       this.form.fill(user);
     },
